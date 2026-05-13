@@ -1,0 +1,803 @@
+<!doctype html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>Réalisez vos dés</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:wght@300;400;500&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --paper: #efe4cf;
+            --paper2: #e9dcc5;
+            --ink: #2b1d14;
+            --brown: #4b3626;
+            --brown2: #6a4c35;
+            --light: #f7f1e7;
+            --shadow: rgba(0, 0, 0, 0.14);
+        }
+
+        body {
+            min-height: 100vh;
+            overflow: hidden;
+            color: var(--ink);
+            font-family: "Cormorant Garamond", serif;
+
+            background:
+                radial-gradient(circle at top, rgba(255, 255, 255, .4), transparent 35%),
+                radial-gradient(circle at bottom right, rgba(0, 0, 0, .03), transparent 30%),
+                linear-gradient(to bottom, var(--paper), var(--paper2));
+
+            position: relative;
+        }
+
+        /* paper grain */
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            opacity: .12;
+
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180' viewBox='0 0 180 180'%3E%3Cg fill='%23000' fill-opacity='.12'%3E%3Ccircle cx='12' cy='17' r='1'/%3E%3Ccircle cx='60' cy='70' r='1'/%3E%3Ccircle cx='120' cy='50' r='1'/%3E%3Ccircle cx='150' cy='120' r='1'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* ========================================= */
+
+        h1 {
+            text-align: center;
+            margin-top: 18px;
+
+            font-family: "Cinzel", serif;
+            font-size: 3.3rem;
+            letter-spacing: .05em;
+            color: #2c1b12;
+        }
+
+        .main {
+            width: 100%;
+            height: calc(100vh - 90px);
+
+            display: grid;
+            grid-template-columns: 240px 1fr 220px;
+            gap: 10px;
+
+            padding: 10px 30px 30px;
+        }
+
+        /* ========================================= */
+        /* LEFT PANEL */
+        /* ========================================= */
+
+        .left-panel {
+            padding-top: 20px;
+        }
+
+        .label {
+            font-size: 1.2rem;
+            margin-bottom: 8px;
+        }
+
+        .select-wrap {
+            position: relative;
+            width: 170px;
+        }
+
+        select {
+            width: 100%;
+            padding: 8px 12px;
+
+            border: 2px solid #8d7a66;
+            background: #f8f1e6;
+
+            font-size: 1.05rem;
+            font-family: "Cormorant Garamond", serif;
+
+            color: var(--ink);
+
+            outline: none;
+        }
+
+        button.action {
+            margin-top: 16px;
+
+            border: none;
+            background: var(--brown);
+
+            color: #fff;
+            padding: 12px 24px;
+
+            border-radius: 6px;
+
+            font-size: 1rem;
+            cursor: pointer;
+
+            box-shadow: 0 4px 10px rgba(0, 0, 0, .15);
+
+            transition: .2s;
+        }
+
+        button.action:hover {
+            background: var(--brown2);
+            transform: translateY(-1px);
+        }
+
+        /* ========================================= */
+        /* CENTER */
+        /* ========================================= */
+
+        .center {
+            position: relative;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        #dice-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* fake perspective floor */
+
+        .floor {
+            position: absolute;
+            bottom: 140px;
+
+            width: 530px;
+            height: 250px;
+
+            transform: perspective(700px) rotateX(70deg);
+
+            background:
+                linear-gradient(to right, rgba(50, 35, 25, .4) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(50, 35, 25, .4) 1px, transparent 1px);
+
+            background-size: 28px 28px;
+
+            opacity: .6;
+
+            pointer-events: none;
+        }
+
+        /* ========================================= */
+        /* RIGHT PANEL */
+        /* ========================================= */
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+
+            padding-top: 20px;
+        }
+
+        .axis {
+            width: 110px;
+            height: 110px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .axis-line {
+            position: absolute;
+            background: #333;
+        }
+
+        .axis-x {
+            width: 50px;
+            height: 2px;
+            background: #009966;
+            top: 50px;
+            left: 50px;
+        }
+
+        .axis-y {
+            width: 2px;
+            height: 50px;
+            background: #00b5d8;
+            left: 50px;
+            top: 0;
+        }
+
+        .axis-z {
+            width: 2px;
+            height: 50px;
+            background: #ff3333;
+            left: 50px;
+            top: 50px;
+            transform: rotate(45deg);
+            transform-origin: top;
+        }
+
+        .slider-group {
+            margin-top: 8px;
+            margin-bottom: 28px;
+
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .slider-label {
+            font-size: 1.8rem;
+            margin-bottom: 10px;
+        }
+
+        .custom-slider {
+            width: 52px;
+            height: 145px;
+
+            border-radius: 40px;
+
+            background: #4a3526;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            position: relative;
+
+            box-shadow:
+                inset 0 0 10px rgba(255, 255, 255, .05),
+                0 4px 12px rgba(0, 0, 0, .18);
+        }
+
+        .custom-slider input {
+            writing-mode: bt-lr;
+            -webkit-appearance: slider-vertical;
+
+            width: 8px;
+            height: 105px;
+        }
+
+        /* ========================================= */
+        /* BOTTOM */
+        /* ========================================= */
+
+        .bottom-bar {
+            position: absolute;
+            bottom: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .arrow {
+            font-size: 4rem;
+            color: #2e1f16;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .face-slot {
+            width: 72px;
+            height: 72px;
+
+            border-radius: 8px;
+
+            background: rgba(255, 255, 255, .55);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            cursor: pointer;
+
+            transition: .2s;
+
+            border: 1px solid rgba(0, 0, 0, .05);
+
+            backdrop-filter: blur(2px);
+        }
+
+        .face-slot:hover {
+            transform: translateY(-3px);
+            background: rgba(255, 255, 255, .8);
+        }
+
+        .face-slot img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .plus {
+            font-size: 3rem;
+            color: #a99884;
+            font-weight: 300;
+        }
+
+        .bag {
+            width: 68px;
+            height: 68px;
+
+            border-radius: 10px;
+
+            background: rgba(255, 255, 255, .55);
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            flex-direction: column;
+
+            color: #2e1f16;
+
+            font-size: 2.5rem;
+        }
+
+        .price {
+            position: absolute;
+            bottom: -28px;
+
+            font-size: 1.8rem;
+        }
+
+        .result {
+            position: absolute;
+            top: 25px;
+            left: 50%;
+            transform: translateX(-50%);
+
+            font-family: "Cinzel", serif;
+            font-size: 3rem;
+            color: #3a271a;
+
+            pointer-events: none;
+        }
+
+        /* ========================================= */
+
+        @media(max-width:1000px) {
+
+            .main {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+            }
+
+            .left-panel,
+            .right-panel {
+                display: none;
+            }
+
+            .floor {
+                width: 350px;
+            }
+
+            .bottom-bar {
+                gap: 10px;
+            }
+
+            .face-slot {
+                width: 58px;
+                height: 58px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>RÉALISEZ VOS DÉS</h1>
+
+    <div class="main">
+
+        <!-- LEFT -->
+        <div class="left-panel">
+
+            <div class="label">
+                Quel dé voulez vous créer ?
+            </div>
+
+            <div class="select-wrap">
+                <select id="dice-select">
+                    <option value="d6">D6 en résine</option>
+                    <option value="d8">D8 en résine</option>
+                    <option value="d10">D10 en résine</option>
+                    <option value="d12">D12 en résine</option>
+                    <option value="d20">D20 en résine</option>
+                </select>
+            </div>
+
+            <button class="action" id="roll-btn">
+                Lancer le dé
+            </button>
+
+        </div>
+
+        <!-- CENTER -->
+        <div class="center">
+
+            <div class="result" id="result">
+                —
+            </div>
+
+            <div class="floor"></div>
+
+            <canvas id="dice-canvas"></canvas>
+
+            <!-- BOTTOM -->
+            <div class="bottom-bar">
+
+                <div class="arrow">‹</div>
+
+                <div class="face-slot"><span class="plus">+</span></div>
+                <div class="face-slot"><span class="plus">+</span></div>
+                <div class="face-slot"><span class="plus">+</span></div>
+                <div class="face-slot"><span class="plus">+</span></div>
+                <div class="face-slot"><span class="plus">+</span></div>
+
+                <div class="arrow">›</div>
+
+                <div class="bag">
+                    👜
+                    <div class="price">0€</div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <!-- RIGHT -->
+        <div class="right-panel">
+
+            <div class="axis">
+                <div class="axis-line axis-x"></div>
+                <div class="axis-line axis-y"></div>
+                <div class="axis-line axis-z"></div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">Taille</div>
+
+                <div class="custom-slider">
+                    <input type="range" id="size-slider" min="1" max="2.5" step="0.01" value="1">
+                </div>
+            </div>
+
+            <div class="slider-group">
+                <div class="slider-label">Arrêtes</div>
+
+                <div class="custom-slider">
+                    <input type="range" id="round-slider" min="0" max="0.3" step="0.01" value="0.08">
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+    <script>
+
+        /* =========================================================
+        SCENE
+        ========================================================= */
+
+        const canvas = document.getElementById("dice-canvas");
+
+        const renderer = new THREE.WebGLRenderer({
+            canvas,
+            antialias: true,
+            alpha: true
+        });
+
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+        const scene = new THREE.Scene();
+
+        const camera = new THREE.PerspectiveCamera(
+            45,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            100
+        );
+
+        camera.position.set(0, 0, 6);
+
+        /* =========================================================
+        RESIZE
+        ========================================================= */
+
+        function resize() {
+
+            const w = canvas.clientWidth || window.innerWidth;
+            const h = canvas.clientHeight || window.innerHeight;
+
+            renderer.setSize(w, h, false);
+
+            camera.aspect = w / h;
+            camera.updateProjectionMatrix();
+        }
+
+        window.addEventListener("resize", resize);
+
+        resize();
+
+        /* =========================================================
+        LIGHTS
+        ========================================================= */
+
+        const ambient = new THREE.AmbientLight(0xffffff, .8);
+        scene.add(ambient);
+
+        const key = new THREE.DirectionalLight(0xffffff, 1.2);
+        key.position.set(5, 5, 5);
+
+        scene.add(key);
+
+        const rim = new THREE.DirectionalLight(0xffddbb, .6);
+        rim.position.set(-4, -2, -3);
+
+        scene.add(rim);
+
+        /* =========================================================
+        TEXTURES
+        ========================================================= */
+
+        const faceTextures = [];
+
+        function createFaceTexture(number) {
+
+            const c = document.createElement("canvas");
+            c.width = 512;
+            c.height = 512;
+
+            const ctx = c.getContext("2d");
+
+            ctx.fillStyle = "#f5ede2";
+            ctx.fillRect(0, 0, 512, 512);
+
+            ctx.strokeStyle = "#b8a48e";
+            ctx.lineWidth = 10;
+
+            ctx.strokeRect(10, 10, 492, 492);
+
+            ctx.fillStyle = "#2a1b12";
+
+            ctx.font = "bold 220px serif";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+
+            ctx.fillText(number, 256, 280);
+
+            return new THREE.CanvasTexture(c);
+        }
+
+        for (let i = 1; i <= 20; i++) {
+            faceTextures.push(createFaceTexture(i));
+        }
+
+        /* =========================================================
+        DICE
+        ========================================================= */
+
+        let dice;
+
+        function createD6() {
+
+            if (dice) {
+                scene.remove(dice);
+            }
+
+            const geo = new THREE.BoxGeometry(2, 2, 2);
+
+            const materials = [
+                new THREE.MeshStandardMaterial({ map: faceTextures[1] }),
+                new THREE.MeshStandardMaterial({ map: faceTextures[2] }),
+                new THREE.MeshStandardMaterial({ map: faceTextures[3] }),
+                new THREE.MeshStandardMaterial({ map: faceTextures[4] }),
+                new THREE.MeshStandardMaterial({ map: faceTextures[5] }),
+                new THREE.MeshStandardMaterial({ map: faceTextures[0] })
+            ];
+
+            dice = new THREE.Mesh(geo, materials);
+
+            scene.add(dice);
+        }
+
+        function createD8() {
+
+            if (dice) {
+                scene.remove(dice);
+            }
+
+            const geo = new THREE.OctahedronGeometry(1.6);
+
+            const mat = new THREE.MeshStandardMaterial({
+                color: 0xf2e4cf,
+                flatShading: true
+            });
+
+            dice = new THREE.Mesh(geo, mat);
+
+            scene.add(dice);
+        }
+
+        function createD12() {
+
+            if (dice) {
+                scene.remove(dice);
+            }
+
+            const geo = new THREE.DodecahedronGeometry(1.5);
+
+            const mat = new THREE.MeshStandardMaterial({
+                color: 0xf0e0ca,
+                flatShading: false,
+                roughness: .5
+            });
+
+            dice = new THREE.Mesh(geo, mat);
+
+            scene.add(dice);
+        }
+
+        function createD20() {
+
+            if (dice) {
+                scene.remove(dice);
+            }
+
+            const geo = new THREE.IcosahedronGeometry(1.7);
+
+            const mat = new THREE.MeshStandardMaterial({
+                color: 0xefdfc8,
+                flatShading: true
+            });
+
+            dice = new THREE.Mesh(geo, mat);
+
+            scene.add(dice);
+        }
+
+        createD12();
+
+        /* =========================================================
+        SELECT
+        ========================================================= */
+
+        const select = document.getElementById("dice-select");
+
+        select.addEventListener("change", () => {
+
+            const val = select.value;
+
+            if (val === "d6") createD6();
+            if (val === "d8") createD8();
+            if (val === "d12") createD12();
+            if (val === "d20") createD20();
+            if (val === "d10") createD20();
+        });
+
+        /* =========================================================
+        ROTATION
+        ========================================================= */
+
+        let dragging = false;
+
+        let prev = {
+            x: 0,
+            y: 0
+        };
+
+        canvas.addEventListener("mousedown", (e) => {
+
+            dragging = true;
+
+            prev.x = e.clientX;
+            prev.y = e.clientY;
+        });
+
+        window.addEventListener("mouseup", () => {
+
+            dragging = false;
+        });
+
+        window.addEventListener("mousemove", (e) => {
+
+            if (!dragging || !dice) return;
+
+            const dx = e.clientX - prev.x;
+            const dy = e.clientY - prev.y;
+
+            dice.rotation.y += dx * .01;
+            dice.rotation.x += dy * .01;
+
+            prev.x = e.clientX;
+            prev.y = e.clientY;
+        });
+
+        /* =========================================================
+        SLIDERS
+        ========================================================= */
+
+        const sizeSlider = document.getElementById("size-slider");
+
+        sizeSlider.addEventListener("input", () => {
+
+            const s = parseFloat(sizeSlider.value);
+
+            if (dice) {
+                dice.scale.set(s, s, s);
+            }
+        });
+
+        /* =========================================================
+        ROLL
+        ========================================================= */
+
+        const resultEl = document.getElementById("result");
+
+        document.getElementById("roll-btn").addEventListener("click", () => {
+
+            const duration = 1500;
+
+            const start = performance.now();
+
+            const result = Math.floor(Math.random() * 20) + 1;
+
+            function anim(now) {
+
+                const t = (now - start) / duration;
+
+                if (t < 1) {
+
+                    dice.rotation.x += .25;
+                    dice.rotation.y += .35;
+                    dice.rotation.z += .18;
+
+                    requestAnimationFrame(anim);
+
+                } else {
+
+                    resultEl.textContent = result;
+                }
+            }
+
+            requestAnimationFrame(anim);
+        });
+
+        /* =========================================================
+        AUTO ROTATION
+        ========================================================= */
+
+        function animate() {
+
+            requestAnimationFrame(animate);
+
+            if (dice && !dragging) {
+
+                dice.rotation.y += .003;
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+    </script>
+</body>
+
+</html>
